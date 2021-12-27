@@ -43,6 +43,10 @@
 	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020
 */
 
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0A00
+#endif
+
 #include <iostream>
 #include <olc_net.h>
 

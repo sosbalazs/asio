@@ -7,20 +7,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # set the project name
-project(SimpleServer)
+project(common)
 
 # include directories
 #include_directories(include)
 include_directories("c:/Users/Balazs/Documents/Workspace/asio/common/include/")
 include_directories("c:/asio-1.20.0/include/")
 
-set(SOURCES 
-src/SimpleServer.cpp)
+#set(SOURCES src/SimpleClient.cpp)
 
 # add the executable
-add_executable(SimpleServer ${SOURCES})
+#add_executable(common ${SOURCES})
 
 # asio needs these libraries
-if(MINGW)
-  target_link_libraries(SimpleServer ws2_32)
-endif()
+#if(MINGW)
+#  target_link_libraries(common ws2_32)
+#endif()
