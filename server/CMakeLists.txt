@@ -23,4 +23,6 @@ add_executable(SimpleServer ${SOURCES})
 # asio needs these libraries
 if(MINGW)
   target_link_libraries(SimpleServer ws2_32)
+  # only the server needs this library:
+  target_link_libraries(SimpleServer wsock32)
 endif()
