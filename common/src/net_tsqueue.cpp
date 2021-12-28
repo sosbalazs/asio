@@ -1,7 +1,7 @@
 /*
 	MMO Client/Server Framework using ASIO
 	"Happy Birthday Mrs Javidx9!" - javidx9
-	Videos: 
+	Videos:
 	Part #1: https://youtu.be/2hNdkYInj4g
 	Part #2: https://youtu.be/UbjxGvrDrbw
 	License (OLC-3)
@@ -42,55 +42,98 @@
 	~~~~~~
 	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020
 */
-#ifndef NET_CLIENT
-#define NET_CLIENT
 
-#pragma once
-#include "olc_net.h"
-//#include "net_common.h"
+#include "net_tsqueue.h"
 
-namespace olc
-{
-	namespace net
-	{
-		template <typename T>
-		class client_interface
-		{
-		public:
-			client_interface() = default;
+#include "net_common.h"
 
-			virtual ~client_interface();
+using namespace olc::net;
 
-		public:
-			// Connect to server with hostname/ip-address and port
-			bool Connect(const std::string& host, const uint16_t port);
-
-			// Disconnect from server
-			void Disconnect();
-
-			// Check if client is actually connected to a server
-			bool IsConnected();
-
-		public:
-			// Send message to server
-			void Send(const message<T>& msg);
-			
-			// Retrieve queue of messages from server
-			tsqueue<owned_message<T>>& Incoming();
-
-		protected:
-			// asio context handles the data transfer...
-			asio::io_context m_context;
-			// ...but needs a thread of its own to execute its work commands
-			std::thread thrContext;
-			// The client has a single instance of a "connection" object, which handles data transfer
-			std::unique_ptr<connection<T>> m_connection;
-			
-		private:
-			// This is the thread safe queue of incoming messages from server
-			tsqueue<owned_message<T>> m_qMessagesIn;
-		};
-	}
+template<typename T>
+tsqueue<T>::~tsqueue() 
+{ 
+	clear();
 }
 
-#endif
+template<typename T>
+const T& tsqueue<T>::front()
+{
+	std::scoped_lock lock(muxQueue);
+	return deqQueue.front();
+}
+
+template<typename T>
+const T& tsqueue<T>::back()
+{
+	std::scoped_lock lock(muxQueue);
+	return deqQueue.back();
+}
+
+template<typename T>
+T tsqueue<T>::pop_front()
+{
+	std::scoped_lock lock(muxQueue);
+	auto t = std::move(deqQueue.front());
+	deqQueue.pop_front();
+	return t;
+}
+
+template<typename T>
+T tsqueue<T>::pop_back()
+{
+	std::scoped_lock lock(muxQueue);
+	auto t = std::move(deqQueue.back());
+	deqQueue.pop_back();
+	return t;
+}
+
+template<typename T>
+void tsqueue<T>::push_back(const T& item)
+{
+	std::scoped_lock lock(muxQueue);
+	deqQueue.emplace_back(std::move(item));
+
+	std::unique_lock<std::mutex> ul(muxBlocking);
+	cvBlocking.notify_one();
+}
+
+template<typename T>
+void tsqueue<T>::push_front(const T& item)
+{
+	std::scoped_lock lock(muxQueue);
+	deqQueue.emplace_front(std::move(item));
+
+	std::unique_lock<std::mutex> ul(muxBlocking);
+	cvBlocking.notify_one();
+}
+
+template<typename T>
+bool tsqueue<T>::empty()
+{
+	std::scoped_lock lock(muxQueue);
+	return deqQueue.empty();
+}
+
+template<typename T>
+size_t tsqueue<T>::count()
+{
+	std::scoped_lock lock(muxQueue);
+	return deqQueue.size();
+}
+
+template<typename T>
+void tsqueue<T>::clear()
+{
+	std::scoped_lock lock(muxQueue);
+	deqQueue.clear();
+}
+
+template<typename T>
+void tsqueue<T>::wait()
+{
+	while (empty())
+	{
+		std::unique_lock<std::mutex> ul(muxBlocking);
+		cvBlocking.wait(ul);
+	}
+}

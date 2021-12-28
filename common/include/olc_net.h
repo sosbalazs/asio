@@ -43,6 +43,9 @@
 	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020
 */
 
+#ifndef OLC_NET
+#define	OLC_NET
+
 #pragma once
 
 #include "net_common.h"
@@ -51,3 +54,5 @@
 #include "net_client.h"
 #include "net_server.h"
 #include "net_connection.h"
+
+#endif

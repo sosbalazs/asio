@@ -42,6 +42,8 @@
 	~~~~~~
 	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020
 */
+#ifndef NET_TSQUEUE
+#define NET_TSQUEUE
 
 #pragma once
 
@@ -57,90 +59,37 @@ namespace olc
 		public:
 			tsqueue() = default;
 			tsqueue(const tsqueue<T>&) = delete;
-			virtual ~tsqueue() { clear(); }
+			virtual ~tsqueue();
 
 		public:
 			// Returns and maintains item at front of Queue
-			const T& front()
-			{
-				std::scoped_lock lock(muxQueue);
-				return deqQueue.front();
-			}
+			const T& front();
 
 			// Returns and maintains item at back of Queue
-			const T& back()
-			{
-				std::scoped_lock lock(muxQueue);
-				return deqQueue.back();
-			}
+			const T& back();
 
 			// Removes and returns item from front of Queue
-			T pop_front()
-			{
-				std::scoped_lock lock(muxQueue);
-				auto t = std::move(deqQueue.front());
-				deqQueue.pop_front();
-				return t;
-			}
+			T pop_front();
 
 			// Removes and returns item from back of Queue
-			T pop_back()
-			{
-				std::scoped_lock lock(muxQueue);
-				auto t = std::move(deqQueue.back());
-				deqQueue.pop_back();
-				return t;
-			}
+			T pop_back();
 
 			// Adds an item to back of Queue
-			void push_back(const T& item)
-			{
-				std::scoped_lock lock(muxQueue);
-				deqQueue.emplace_back(std::move(item));
-
-				std::unique_lock<std::mutex> ul(muxBlocking);
-				cvBlocking.notify_one();
-			}
+			void push_back(const T& item);
 
 			// Adds an item to front of Queue
-			void push_front(const T& item)
-			{
-				std::scoped_lock lock(muxQueue);
-				deqQueue.emplace_front(std::move(item));
-
-				std::unique_lock<std::mutex> ul(muxBlocking);
-				cvBlocking.notify_one();
-			}
+			void push_front(const T& item);
 
 			// Returns true if Queue has no items
-			bool empty()
-			{
-				std::scoped_lock lock(muxQueue);
-				return deqQueue.empty();
-			}
+			bool empty();
 
 			// Returns number of items in Queue
-			size_t count()
-			{
-				std::scoped_lock lock(muxQueue);
-				return deqQueue.size();
-			}
+			size_t count();
 
 			// Clears Queue
-			void clear()
-			{
-				std::scoped_lock lock(muxQueue);
-				deqQueue.clear();
-			}
+			void clear();
 
-			void wait()
-			{
-				while (empty())
-				{
-					std::unique_lock<std::mutex> ul(muxBlocking);
-					cvBlocking.wait(ul);
-				}
-			}
+			void wait();
 
 		protected:
 			std::mutex muxQueue;
@@ -150,3 +99,5 @@ namespace olc
 		};
 	}
 }
+
+#endif

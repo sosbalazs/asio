@@ -42,10 +42,7 @@
 	~~~~~~
 	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020
 */
-#ifndef NET_MESSAGE
-#define NET_MESSAGE
 
-#pragma once
 #include "net_common.h"
 
 namespace olc
@@ -165,5 +162,3 @@ namespace olc
 		///[OLC_HEADERIFYIER] END "MESSAGE"
 	}
 }
-
-#endif
