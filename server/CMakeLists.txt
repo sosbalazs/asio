@@ -17,8 +17,14 @@ include_directories("c:/asio-1.20.0/include/")
 set(SOURCES 
 src/SimpleServer.cpp)
 
+# staticly linked precompiled binaies form common
+link_directories("c:/Users/Balazs/Documents/Workspace/asio/common/build/")
+
 # add the executable
 add_executable(SimpleServer ${SOURCES})
+
+# link the common project binaries to this project
+target_link_libraries(SimpleServer common)
 
 # asio needs these libraries
 if(MINGW)
