@@ -1,6 +1,8 @@
 server/build/
 client/build/
 common/build/
+myClient/build/
 server/.vscode/
 client/.vscode/
 common/.vscode/
+myClient/.vscode/
