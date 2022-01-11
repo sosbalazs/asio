@@ -51,7 +51,7 @@ Message createNewMessage(std::string type_s)
       break;
     default:
       newMessage.header.id = CustomMsgTypes::MessageAll;
-      newMessage.addToBody("Buksi");
+      //newMessage.addToBody("Buksi");
   }
   return newMessage;
 }
@@ -109,9 +109,13 @@ int main()
         exitLoop = true;
       }
 
-      std::string sRequest = newMessage.toString();
+      //std::string sRequest = newMessage.toString();
+      std::cout << "Write header\n";
 
-      socket.write_some(asio::buffer(sRequest.data(), sRequest.size()), ec);
+      // Body still empty
+      socket.write_some(asio::buffer(&newMessage.header, 8), ec);
+      std::cout << "Write body\n";
+      socket.write_some(asio::buffer(&newMessage.body, newMessage.body.size()), ec);
     }
 
     context.stop();

@@ -28,16 +28,14 @@ std::ostream& operator<<(std::ostream& os, const CustomMsgTypes& type)
 
 Message::Message()
 {
-  header.size = sizeof(header);
+  header.size = 0;
 }
 
 Message& Message::addToBody(std::string newData)
 {
-  for(const auto& character:newData)
-  {
-    body.push_back(character);
-    header.size += sizeof(character);
-  }
+  memcpy(&newData, &body, newData.size());
+  header.size += body.size();
+
   return *this;
 }
 
@@ -47,7 +45,7 @@ std::string Message::toString()
   ss << header.id << header.size;
   for(const auto& element:body)
   {
-    ss << element;
+    ss << static_cast<char>(element);
   }
   return ss.str();
 }
