@@ -80,7 +80,12 @@ namespace olc
 			// Override for std::cout compatibility - produces friendly description of message
 			friend std::ostream& operator << (std::ostream& os, const message<T>& msg)
 			{
-				os << "ID:" << int(msg.header.id) << " Size:" << msg.header.size;
+				os << "ID:" << int(msg.header.id) << " Size:" << msg.header.size << " Data: ";
+				for(const auto& character:msg.body)
+				{
+					os << character;
+				}
+				os << std::endl;
 				return os;
 			}
 

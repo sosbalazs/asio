@@ -1,39 +1,8 @@
+#include "StdCommon.h"
 
-#ifdef _WIN32
-#define _WIN32_WINNT 0x0A00
-#endif
-
-#define ASIO_STANDALONE
-#include <asio.hpp>
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-
-#include <iostream>
-#include <chrono>
 
 #include "Message.h"
-
-std::vector<char> vBuffer(20 * 1024);
-
-void GrabSomeData(asio::ip::tcp::socket& socket)
-{
-  socket.async_read_some(asio::buffer(vBuffer.data(), vBuffer.size()),
-    [&](std::error_code ec, std::size_t length)
-    {
-      if(!ec)
-      {
-        std::cout << "\n\nRead " << length << " bytes\n\n";
-
-        for (int i = 0; i < length; ++i)
-        {
-          std::cout << vBuffer[i];
-
-          GrabSomeData(socket);
-        }
-      }
-    }
-  );
-}
+#include "Connector.h"
 
 Message createNewMessage(std::string type_s)
 {
@@ -42,15 +11,15 @@ Message createNewMessage(std::string type_s)
   switch(type)
   {
     case 1:
-      newMessage.header.id = CustomMsgTypes::ServerPing;
+      newMessage.Header.id = CustomMsgTypes::ServerPing;
       newMessage.addToBody("Buksi");
       break;
     case 2:
-      newMessage.header.id = CustomMsgTypes::MessageAll;
+      newMessage.Header.id = CustomMsgTypes::MessageAll;
       newMessage.addToBody("Buksi");
       break;
     default:
-      newMessage.header.id = CustomMsgTypes::MessageAll;
+      newMessage.Header.id = CustomMsgTypes::MessageAll;
       //newMessage.addToBody("Buksi");
   }
   return newMessage;
@@ -88,13 +57,15 @@ int main()
 
   if (socket.is_open())
   {
-    GrabSomeData(socket);
+    Connector conn;
+    conn.readFromSocket(socket);
 
     bool exitLoop = false;
+
+    Message newMessage;
     while(!exitLoop)
     {
       std::string result = "";
-      Message newMessage;
       std::cout << "Waiting for input\n";
       std::cin >> result;
 
@@ -102,20 +73,15 @@ int main()
       {
         newMessage = createNewMessage(result);
 
-        std::cout << "New message has been created! " << newMessage.toString() << "\n";
+        std::cout << "New message has been created!\n" << newMessage << "\n";
       }
       else
       {
         exitLoop = true;
       }
 
-      //std::string sRequest = newMessage.toString();
-      std::cout << "Write header\n";
-
-      // Body still empty
-      socket.write_some(asio::buffer(&newMessage.header, 8), ec);
-      std::cout << "Write body\n";
-      socket.write_some(asio::buffer(&newMessage.body, newMessage.body.size()), ec);
+      socket.write_some(asio::buffer(&newMessage.Header, 8), ec);
+      socket.write_some(asio::buffer(&newMessage.Body, newMessage.Body.size()+1), ec);
     }
 
     context.stop();

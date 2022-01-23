@@ -1,5 +1,3 @@
-#include <iostream>
-#include <sstream>
 #include "Message.h"
 
 std::ostream& operator<<(std::ostream& os, const CustomMsgTypes& type)
@@ -28,24 +26,38 @@ std::ostream& operator<<(std::ostream& os, const CustomMsgTypes& type)
 
 Message::Message()
 {
-  header.size = 0;
+  Header.size = 0;
+}
+
+Message::Message(Message_header& header, std::vector<uint8_t> body):Header(header), Body(body)
+{
+  
 }
 
 Message& Message::addToBody(std::string newData)
 {
-  memcpy(&newData, &body, newData.size());
-  header.size += body.size();
+  for(auto& character:newData)
+  {
+    Body.push_back(character);
+  }
+  Header.size=Body.size()+1;
 
   return *this;
 }
 
-std::string Message::toString()
+std::ostream& operator <<(std::ostream& os, Message_header& header)
 {
-  std::stringstream ss;
-  ss << header.id << header.size;
-  for(const auto& element:body)
+  os << "Msg id: " << header.id << ", data size: " << header.size;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, Message& msg)
+{
+  os << msg.Header << "\nData: ";
+  for (const auto& character:msg.Body) 
   {
-    ss << static_cast<char>(element);
+    os << character;
   }
-  return ss.str();
+  os << std::endl;
+  return os;
 }

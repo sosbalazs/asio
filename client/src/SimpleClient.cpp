@@ -72,7 +72,10 @@ public:
 		// Caution with this...
 		std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();		
 
-		msg << timeNow;
+		// msg << timeNow;
+		msg << "Buksi";
+
+		std::cout << "Send: " << msg;
 		Send(msg);
 	}
 
@@ -129,10 +132,12 @@ int main()
 				case CustomMsgTypes::ServerPing:
 				{
 					// Server has responded to a ping request
-					std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
+					/*std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 					std::chrono::system_clock::time_point timeThen;
 					msg >> timeThen;
-					std::cout << "Ping: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
+					std::cout << "Ping: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";*/
+
+					std::cout << "Ping: " << msg << "\n";
 				}
 				break;
 
