@@ -10,7 +10,11 @@ enum class MessageParts
 class Connector
 {
     public:
-        Connector() = default;
+        Connector();
+        bool connect();
+
+        void ioRun();
+
         void readFromSocket(asio::ip::tcp::socket& socket);
 
     private:
@@ -19,4 +23,10 @@ class Connector
         void errorOnRead(asio::ip::tcp::socket& socket, MessageParts messagePart, std::error_code ec);
         Message tmpMsg;
         std::vector<Message> Queue;
+
+
+        bool IsFinalized;
+        // asio::ip::tcp::socket Socket;
+        asio::io_context Context;
+        std::thread IoThread;
 };

@@ -20,6 +20,33 @@ namespace
 
 }
 
+Connector::Connector() : IsFinalized(false), 
+                        Context()
+{
+  IoThread = std::thread(Connector::ioRun, this);
+}
+
+void Connector::ioRun()
+{
+  //while(!IsFinalized) {
+    asio::error_code ec;
+    Context.run();
+
+    asio::ip::tcp::socket socket(Context);
+    asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 60000);
+    socket.connect(endpoint, ec);
+    
+    if(!ec)
+    {
+      std::cout << "Connected" << std::endl;
+    }
+    else
+    {
+      std::cout << "Failed to connect to address:\n" << ec.message() << std::endl;
+    }
+  //}
+}
+
 void Connector::readFromSocket(asio::ip::tcp::socket& socket)
 {
     grabSomeData(socket, MessageParts::Head, HeaderSize);
