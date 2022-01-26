@@ -47,6 +47,11 @@ void Connector::ioRun()
   //}
 }
 
+void sendMessage(CustomMsgTypes customMsgType)
+{
+  
+}
+
 void Connector::readFromSocket(asio::ip::tcp::socket& socket)
 {
     grabSomeData(socket, MessageParts::Head, HeaderSize);

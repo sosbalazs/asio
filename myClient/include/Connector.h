@@ -17,6 +17,8 @@ class Connector
 
         void readFromSocket(asio::ip::tcp::socket& socket);
 
+        void sendMessage(CustomMsgTypes customMsgType);
+
     private:
         void grabSomeData(asio::ip::tcp::socket& socket, MessageParts messagePart, uint32_t size);
         void resetTmpMsg();
