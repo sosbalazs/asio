@@ -27,6 +27,7 @@ Message createNewMessage(std::string type_s)
 
 int main()
 {
+  /*
   asio::error_code ec;
 
   // Create a "context" - essentially the platform specific interface
@@ -90,7 +91,7 @@ int main()
       thrContext.join();
     }
   }
-
+*/
 
   return 0;
 }

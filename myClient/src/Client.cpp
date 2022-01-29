@@ -1,13 +1,13 @@
 #include "Client.h"
 
-Client::Client : Conn(std::make_unique<Connector>())
+Client::Client : Conn(std::make_unique<Connector>(*this))
 {
-
+    std::cout << "New client created\n";
 }
 
 void Client::showUserMenu()
 {
-    while(Finalized)
+    while(!Finalized)
     {
         std::cout << "Enter Input:\n1) Ping\n2) Message All\n";
         uint8_t result;
@@ -24,4 +24,17 @@ void Client::showUserMenu()
                 Finalized = true;
         }
     }
+}
+
+void Client::connected()
+{
+    Connected = true;
+    GuiThread(showUserMenu);
+}
+
+void Client::finalize()
+{
+    Finalized = true;
+    Conn->finalize();
+    GuiThread.join();
 }
