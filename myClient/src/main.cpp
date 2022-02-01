@@ -1,10 +1,7 @@
 #include "StdCommon.h"
 
 
-#include "Message.h"
-#include "Connector.h"
-
-Message createNewMessage(std::string type_s)
+/*Message createNewMessage(std::string type_s)
 {
   int type = stoi(type_s);
   Message newMessage;
@@ -23,7 +20,7 @@ Message createNewMessage(std::string type_s)
       //newMessage.addToBody("Buksi");
   }
   return newMessage;
-}
+}*/
 
 int main()
 {

@@ -22,6 +22,27 @@ struct Message_header
 
 struct Message
 {
+  enum class MessageParts
+  {
+      Head,
+      Body
+  };
+
+  friend std::ostream& operator<<(std::ostream& os, MessageParts& messagePart)
+  {
+      switch(messagePart)
+      {
+      case MessageParts::Body:
+          os << "Body";
+          break;
+      case MessageParts::Head:
+          os << "Head";
+          break;    
+      }
+      return os;
+  }
+
+
   Message();
   Message(Message_header& header, std::vector<uint8_t> body);
 

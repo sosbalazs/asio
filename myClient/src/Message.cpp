@@ -10,13 +10,13 @@ std::ostream& operator<<(std::ostream& os, const CustomMsgTypes& type)
     MessageAll,
     ServerMessage,
     */
-	  case CustomMsgTypes::ServerPing:
+    case CustomMsgTypes::ServerPing:
       os << 2;
       break;
-	  case CustomMsgTypes::MessageAll:
+    case CustomMsgTypes::MessageAll:
       os << 3;
       break;
-	  case CustomMsgTypes::ServerMessage:
+    case CustomMsgTypes::ServerMessage:
     case CustomMsgTypes::ServerAccept:
     case CustomMsgTypes::ServerDeny:
       os << 0;
@@ -61,3 +61,4 @@ std::ostream& operator<<(std::ostream& os, Message& msg)
   os << std::endl;
   return os;
 }
+

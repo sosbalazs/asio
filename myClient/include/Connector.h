@@ -1,18 +1,15 @@
+#ifndef CONNECTOR
+#define CONNECTOR
+
 #include "StdCommon.h"
 #include "Message.h"
 
 class Client;
 
-enum class MessageParts
-{
-    Head,
-    Body
-};
-
 class Connector
 {
     public:
-        Connector(Client& myClient);
+        Connector(Client* myClient);
 
         bool connect();
 
@@ -25,11 +22,11 @@ class Connector
         void finalize();
 
     private:
-        void grabSomeData(asio::ip::tcp::socket& socket, MessageParts messagePart, uint32_t size);
+        void grabSomeData(asio::ip::tcp::socket& socket, Message::MessageParts messagePart, uint32_t size);
         void resetTmpMsg();
-        void errorOnRead(asio::ip::tcp::socket& socket, MessageParts messagePart, std::error_code ec);
+        void errorOnRead(asio::ip::tcp::socket& socket, Message::MessageParts messagePart, std::error_code ec);
 
-        Client& MyClient;
+        Client* MyClient;
         Message tmpMsg;
         std::vector<Message> Queue;
 
@@ -39,3 +36,5 @@ class Connector
         asio::io_context Context;
         std::thread IoThread;
 };
+
+#endif

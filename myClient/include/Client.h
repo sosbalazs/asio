@@ -1,3 +1,6 @@
+#ifndef CLIENT
+#define CLIENT
+
 #include "StdCommon.h"
 #include "Connector.h"
 
@@ -13,8 +16,11 @@ class Client
         void finalize();
 
     private:
-        std::unique_ptr<Connector> Conn;
+
+        Connector Conn;
         bool Finalized = false;
         bool Connected = false;
         std::thread GuiThread;
 };
+
+#endif

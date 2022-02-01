@@ -1,6 +1,6 @@
 #include "Client.h"
 
-Client::Client : Conn(std::make_unique<Connector>(*this))
+Client::Client() : Conn(this)
 {
     std::cout << "New client created\n";
 }
@@ -15,10 +15,10 @@ void Client::showUserMenu()
         switch(result)
         {
             case 1:
-                Conn->sendMessage(CustomMsgTypes::ServerPing);
+                Conn.sendMessage(CustomMsgTypes::ServerPing);
                 break;
             case 2:
-                Conn->sendMessage(CustomMsgTypes::MessageAll);
+                Conn.sendMessage(CustomMsgTypes::MessageAll);
                 break;
             default:
                 Finalized = true;
@@ -29,12 +29,12 @@ void Client::showUserMenu()
 void Client::connected()
 {
     Connected = true;
-    GuiThread(showUserMenu);
+    GuiThread = std::thread(&Client::showUserMenu, this);
 }
 
 void Client::finalize()
 {
     Finalized = true;
-    Conn->finalize();
+    Conn.finalize();
     GuiThread.join();
 }
