@@ -15,7 +15,7 @@ Connector::Connector(Client* myClient) : MyClient(myClient),
 
 void Connector::finalize()
 {
-  std::cout << "Finaze called\n";
+  std::cout << __FUNCTION__ << "Finaze called\n";
   IsFinalized = true;
   IoThread.join();
 }

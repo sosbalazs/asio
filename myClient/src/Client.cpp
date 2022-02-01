@@ -28,12 +28,14 @@ void Client::showUserMenu()
 
 void Client::connected()
 {
+    std::cout << __FUNCTION__ << "Client connected\n";
     Connected = true;
     GuiThread = std::thread(&Client::showUserMenu, this);
 }
 
 void Client::finalize()
 {
+    std::cout << __FUNCTION__ << "Finaze called\n";
     Finalized = true;
     Conn.finalize();
     GuiThread.join();
