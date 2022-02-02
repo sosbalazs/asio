@@ -30,6 +30,7 @@ void Client::connected()
 {
     std::cout << __FUNCTION__ << "Client connected\n";
     Connected = true;
+    Conn.connected();
     GuiThread = std::thread(&Client::showUserMenu, this);
 }
 

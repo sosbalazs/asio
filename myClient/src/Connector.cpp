@@ -8,7 +8,38 @@ namespace
 
 Connector::Connector(Client* myClient) : MyClient(myClient), 
                                         IsFinalized(false), 
-                                        Context()
+                                        Context(),
+                                        Socket(Context)
+{
+  initialiseConnection();
+}
+
+void Connector::initialiseConnection()
+{
+  std::cout << "Initialize Connection...\n";
+  asio::error_code ec;
+
+  asio::io_context::work idleWork(Context);
+
+  ContextThread = std::thread([&]() { Context.run(); });
+
+  asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 60000);
+  Socket.connect(endpoint, ec);
+
+  if(!ec)
+  {
+    std::cout << "Connected" << std::endl;
+    MyClient->connected();
+    readFromSocket(Socket);
+  }
+  else
+  {
+    std::cout << "Failed to connect to address:\n" << ec.message() << std::endl;
+    MyClient->finalize();
+  }
+}
+
+void Connector::connected()
 {
   IoThread = std::thread(&Connector::ioRun, this);
 }
@@ -16,33 +47,22 @@ Connector::Connector(Client* myClient) : MyClient(myClient),
 void Connector::finalize()
 {
   std::cout << __FUNCTION__ << "Finaze called\n";
+  ContextThread.join();
   IsFinalized = true;
   IoThread.join();
 }
 
 void Connector::ioRun()
 {
-  while(!IsFinalized) {
-    asio::error_code ec;
-    Context.run();
-
-    asio::ip::tcp::socket socket(Context);
-    asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 60000);
-    socket.connect(endpoint, ec);
-    
-
-
-    if(!ec)
+  while(!IsFinalized) 
+  {
+    if(!Queue.empty())
     {
-      std::cout << "Connected" << std::endl;
-      MyClient->connected();
-      readFromSocket(socket);
+      Message msg = Queue.at(0);
+      Queue.erase(Queue.begin());
+      std::cout << msg << std::endl;
     }
-    else
-    {
-      std::cout << "Failed to connect to address:\n" << ec.message() << std::endl;
-      MyClient->finalize();
-    }
+    // Waiting for messages
   }
 }
 
@@ -69,7 +89,6 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
           std::cout << tmpMsg.Header;
           if(tmpMsg.Header.size != 0)
           {
-            resetTmpMsg();
             // There is also body, let's grab that
             grabSomeData(socket, Message::MessageParts::Body, tmpMsg.Header.size);
           }
@@ -77,6 +96,8 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
           {
             // There is no body for this message
             std::cout << "\nThere is no body to this message!\n";
+            Queue.push_back(tmpMsg);
+            resetTmpMsg();
             grabSomeData(socket, Message::MessageParts::Head, HeaderSize);
           }
         }
@@ -96,7 +117,9 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
         std::cout << "\nReading Body " << length << " bytes\n";
 
         std::cout << "\nMessage arrived: " << tmpMsg << "\n";
-
+        
+        Queue.push_back(tmpMsg);
+        resetTmpMsg();
         grabSomeData(socket, Message::MessageParts::Head, HeaderSize);
       }
       else

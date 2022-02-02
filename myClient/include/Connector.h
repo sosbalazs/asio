@@ -11,7 +11,9 @@ class Connector
     public:
         Connector(Client* myClient);
 
-        bool connect();
+        void initialiseConnection();
+
+        void connected();
 
         void ioRun();
 
@@ -32,9 +34,10 @@ class Connector
 
 
         bool IsFinalized;
-        // asio::ip::tcp::socket Socket;
+        asio::ip::tcp::socket Socket;
         asio::io_context Context;
         std::thread IoThread;
+        std::thread ContextThread;
 };
 
 #endif
