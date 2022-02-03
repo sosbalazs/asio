@@ -6,12 +6,19 @@ namespace
     int HeaderSize = 8;
 }
 
-Connector::Connector(Client* myClient) : MyClient(myClient), 
+Connector::Connector(Client* myClient): MyClient(myClient), 
                                         IsFinalized(false), 
-                                        Context(),
-                                        Socket(Context)
+                                        Context()
 {
+  std::cout << "Creating Connector...\n";
   initialiseConnection();
+}
+
+Connector& Connector::operator=(const Connector& rhs)
+{
+  MyClient = rhs.MyClient;
+  IsFinalized = false;
+  return *this;
 }
 
 void Connector::initialiseConnection()
@@ -24,13 +31,15 @@ void Connector::initialiseConnection()
   ContextThread = std::thread([&]() { Context.run(); });
 
   asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 60000);
-  Socket.connect(endpoint, ec);
+  Socket = std::make_shared<asio::ip::tcp::socket>(Context);
+  
+  Socket->connect(endpoint, ec);
 
   if(!ec)
   {
     std::cout << "Connected" << std::endl;
     MyClient->connected();
-    readFromSocket(Socket);
+    readFromSocket();
   }
   else
   {
@@ -71,16 +80,16 @@ void Connector::sendMessage(CustomMsgTypes customMsgType)
   
 }
 
-void Connector::readFromSocket(asio::ip::tcp::socket& socket)
+void Connector::readFromSocket()
 {
-    grabSomeData(socket, Message::MessageParts::Head, HeaderSize);
+    grabSomeData(Message::MessageParts::Head, HeaderSize);
 }
 
-void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessageParts messagePart, uint32_t size)
+void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
 {
   if(messagePart == Message::MessageParts::Head)
   {
-    socket.async_read_some(asio::buffer(&tmpMsg.Header, size),
+    Socket->async_read_some(asio::buffer(&tmpMsg.Header, size),
       [&](std::error_code ec, std::size_t length)
       {
         if(!ec)
@@ -90,7 +99,7 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
           if(tmpMsg.Header.size != 0)
           {
             // There is also body, let's grab that
-            grabSomeData(socket, Message::MessageParts::Body, tmpMsg.Header.size);
+            grabSomeData(Message::MessageParts::Body, tmpMsg.Header.size);
           }
           else
           {
@@ -98,7 +107,7 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
             std::cout << "\nThere is no body to this message!\n";
             Queue.push_back(tmpMsg);
             resetTmpMsg();
-            grabSomeData(socket, Message::MessageParts::Head, HeaderSize);
+            grabSomeData(Message::MessageParts::Head, HeaderSize);
           }
         }
         else
@@ -109,7 +118,7 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
   }
   else
   {
-    socket.async_read_some(asio::buffer(tmpMsg.Body, size),
+    Socket->async_read_some(asio::buffer(tmpMsg.Body, size),
     [&](std::error_code ec, std::size_t length)
     {
       if(!ec)
@@ -120,7 +129,7 @@ void Connector::grabSomeData(asio::ip::tcp::socket& socket, Message::MessagePart
         
         Queue.push_back(tmpMsg);
         resetTmpMsg();
-        grabSomeData(socket, Message::MessageParts::Head, HeaderSize);
+        grabSomeData(Message::MessageParts::Head, HeaderSize);
       }
       else
       {

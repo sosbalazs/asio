@@ -1,6 +1,6 @@
 #include "Client.h"
 
-Client::Client() : Conn(this)
+Client::Client(): Conn(this)
 {
     std::cout << "New client created\n";
 }
@@ -40,4 +40,9 @@ void Client::finalize()
     Finalized = true;
     Conn.finalize();
     GuiThread.join();
+}
+
+void Client::print()
+{
+    std::cout << "print\n";
 }

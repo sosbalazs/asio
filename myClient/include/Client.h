@@ -15,6 +15,8 @@ class Client
 
         void finalize();
 
+        void print();
+
     private:
 
         Connector Conn;
