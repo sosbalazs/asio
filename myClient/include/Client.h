@@ -15,11 +15,9 @@ class Client
 
         void finalize();
 
-        void print();
-
     private:
 
-        Connector Conn;
+        std::unique_ptr<Connector> Conn;
         bool Finalized = false;
         bool Connected = false;
         std::thread GuiThread;

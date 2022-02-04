@@ -1,12 +1,13 @@
 #include "Client.h"
 
-Client::Client(): Conn(this)
+Client::Client(): Conn(std::make_unique<Connector>(this))
 {
     std::cout << "New client created\n";
 }
 
 void Client::showUserMenu()
 {
+    std::cout << "In function: " << __FUNCTION__ << "\n";
     while(!Finalized)
     {
         std::cout << "Enter Input:\n1) Ping\n2) Message All\n";
@@ -15,10 +16,10 @@ void Client::showUserMenu()
         switch(result)
         {
             case 1:
-                Conn.sendMessage(CustomMsgTypes::ServerPing);
+                Conn->sendMessage(CustomMsgTypes::ServerPing);
                 break;
             case 2:
-                Conn.sendMessage(CustomMsgTypes::MessageAll);
+                Conn->sendMessage(CustomMsgTypes::MessageAll);
                 break;
             default:
                 Finalized = true;
@@ -28,21 +29,17 @@ void Client::showUserMenu()
 
 void Client::connected()
 {
-    std::cout << __FUNCTION__ << "Client connected\n";
+    std::cout << "In function: " << __FUNCTION__ << ", Client connected\n";
     Connected = true;
-    Conn.connected();
+    Conn->connected();
+    std::cout << "In function: " << __FUNCTION__ << ", Starting Gui thread\n";
     GuiThread = std::thread(&Client::showUserMenu, this);
 }
 
 void Client::finalize()
 {
-    std::cout << __FUNCTION__ << "Finaze called\n";
+    std::cout << "In function: " << __FUNCTION__ << ", Finaze called\n";
     Finalized = true;
-    Conn.finalize();
+    Conn->finalize();
     GuiThread.join();
-}
-
-void Client::print()
-{
-    std::cout << "print\n";
 }

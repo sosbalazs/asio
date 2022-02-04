@@ -13,7 +13,7 @@ class Connector
 
         Connector& operator=(const Connector& rhs);
 
-        void initialiseConnection();
+        void initializeConnection();
 
         void connected();
 
@@ -31,11 +31,7 @@ class Connector
         void errorOnRead(Message::MessageParts messagePart, std::error_code ec);
 
         Client* MyClient;
-        Message tmpMsg;
-        std::vector<Message> Queue;
 
-
-        bool IsFinalized = false;
         std::shared_ptr<asio::ip::tcp::socket> Socket;
         asio::io_context Context;
         std::thread IoThread;

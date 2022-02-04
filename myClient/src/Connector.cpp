@@ -4,14 +4,16 @@
 namespace
 {
     int HeaderSize = 8;
+    static bool IsFinalized = false;
+    static Message tmpMsg;
+    static std::vector<Message> Queue;
 }
 
 Connector::Connector(Client* myClient): MyClient(myClient), 
-                                        IsFinalized(false), 
                                         Context()
 {
   std::cout << "Creating Connector...\n";
-  initialiseConnection();
+  initializeConnection();
 }
 
 Connector& Connector::operator=(const Connector& rhs)
@@ -21,14 +23,14 @@ Connector& Connector::operator=(const Connector& rhs)
   return *this;
 }
 
-void Connector::initialiseConnection()
+void Connector::initializeConnection()
 {
   std::cout << "Initialize Connection...\n";
   asio::error_code ec;
 
-  asio::io_context::work idleWork(Context);
+  // asio::io_context::work idleWork(Context);
 
-  ContextThread = std::thread([&]() { Context.run(); });
+  /*ContextThread = std::thread([&]() {*/ Context.run();// });
 
   asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 60000);
   Socket = std::make_shared<asio::ip::tcp::socket>(Context);
@@ -50,12 +52,14 @@ void Connector::initialiseConnection()
 
 void Connector::connected()
 {
-  IoThread = std::thread(&Connector::ioRun, this);
+  std::cout << "In function: " << __FUNCTION__ << ", ioRun starting\n";
+  IoThread = std::thread(&Connector::ioRun, std::ref(*this));
+  std::cout << "In function: " << __FUNCTION__ << ", ioRun started\n";
 }
 
 void Connector::finalize()
 {
-  std::cout << __FUNCTION__ << "Finaze called\n";
+  std::cout << "In function: " << __FUNCTION__ << "\n";
   ContextThread.join();
   IsFinalized = true;
   IoThread.join();
@@ -63,16 +67,23 @@ void Connector::finalize()
 
 void Connector::ioRun()
 {
+  std::cout << "In function: " << __FUNCTION__ << "\n";
   while(!IsFinalized) 
   {
     if(!Queue.empty())
     {
+      std::cout << "In function: " << __FUNCTION__ << ", Queue is not empty\n";
       Message msg = Queue.at(0);
       Queue.erase(Queue.begin());
       std::cout << msg << std::endl;
     }
     // Waiting for messages
+    //std::cout << "In function: " << __FUNCTION__ << ", before delay\n";
+    using namespace std::literals::chrono_literals;
+    //std::this_thread::sleep_for(2s);
+    //std::cout << "In function: " << __FUNCTION__ << ", after delay\n";
   }
+  std::cout << "In function: " << __FUNCTION__ << ", Loop exited\n";
 }
 
 void Connector::sendMessage(CustomMsgTypes customMsgType)
@@ -82,6 +93,7 @@ void Connector::sendMessage(CustomMsgTypes customMsgType)
 
 void Connector::readFromSocket()
 {
+    std::cout << "In function: " << __FUNCTION__ << "\n";
     grabSomeData(Message::MessageParts::Head, HeaderSize);
 }
 
