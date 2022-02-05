@@ -2,7 +2,15 @@
 
 Client::Client(): Conn(std::make_unique<Connector>(this))
 {
-    std::cout << "New client created\n";
+    std::cout << "Client this:" << this << ", New client created\n";
+    Conn->initializeConnection();
+}
+
+Client::~Client()
+{
+    std::cout << "Client this:" << this << " Waiting for GUI thread\n";
+    GuiThread.join();
+    std::cout << "Client this:" << this << ", GUI thread stopped, Deleting Client\n";
 }
 
 void Client::showUserMenu()
@@ -41,5 +49,4 @@ void Client::finalize()
     std::cout << "In function: " << __FUNCTION__ << ", Finaze called\n";
     Finalized = true;
     Conn->finalize();
-    GuiThread.join();
 }

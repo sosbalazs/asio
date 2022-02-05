@@ -9,6 +9,8 @@ class Client
     public:
         Client();
 
+        ~Client();
+
         void showUserMenu();
 
         void connected();        

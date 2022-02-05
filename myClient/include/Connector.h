@@ -11,7 +11,8 @@ class Connector
     public:
         Connector(Client* myClient);
 
-        Connector& operator=(const Connector& rhs);
+        Connector(const Connector& rhs) = delete;
+        Connector& operator=(const Connector& rhs) = delete;
 
         void initializeConnection();
 
@@ -36,6 +37,10 @@ class Connector
         asio::io_context Context;
         std::thread IoThread;
         std::thread ContextThread;
+
+        bool IsFinalized = false;
+        Message tmpMsg;
+        std::vector<Message> Queue;
 };
 
 #endif

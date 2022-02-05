@@ -4,28 +4,17 @@
 namespace
 {
     int HeaderSize = 8;
-    static bool IsFinalized = false;
-    static Message tmpMsg;
-    static std::vector<Message> Queue;
 }
 
 Connector::Connector(Client* myClient): MyClient(myClient), 
                                         Context()
 {
   std::cout << "Creating Connector...\n";
-  initializeConnection();
-}
-
-Connector& Connector::operator=(const Connector& rhs)
-{
-  MyClient = rhs.MyClient;
-  IsFinalized = false;
-  return *this;
 }
 
 void Connector::initializeConnection()
 {
-  std::cout << "Initialize Connection...\n";
+  std::cout << "This: " << this << ", Initialize Connection...\nMyClient is: " << MyClient << "\n";
   asio::error_code ec;
 
   // asio::io_context::work idleWork(Context);
@@ -52,9 +41,8 @@ void Connector::initializeConnection()
 
 void Connector::connected()
 {
-  std::cout << "In function: " << __FUNCTION__ << ", ioRun starting\n";
-  IoThread = std::thread(&Connector::ioRun, std::ref(*this));
-  std::cout << "In function: " << __FUNCTION__ << ", ioRun started\n";
+  std::cout << "This: " << this << ", In function: " << __FUNCTION__ << ", ioRun starting\n";
+  IoThread = std::thread(&Connector::ioRun, this);
 }
 
 void Connector::finalize()
@@ -80,8 +68,7 @@ void Connector::ioRun()
     // Waiting for messages
     //std::cout << "In function: " << __FUNCTION__ << ", before delay\n";
     using namespace std::literals::chrono_literals;
-    //std::this_thread::sleep_for(2s);
-    //std::cout << "In function: " << __FUNCTION__ << ", after delay\n";
+    std::this_thread::sleep_for(2s);
   }
   std::cout << "In function: " << __FUNCTION__ << ", Loop exited\n";
 }
