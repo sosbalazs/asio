@@ -17,6 +17,8 @@ class Client
 
         void finalize();
 
+        void waiting();
+
     private:
 
         std::unique_ptr<Connector> Conn;

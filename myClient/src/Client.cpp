@@ -8,9 +8,7 @@ Client::Client(): Conn(std::make_unique<Connector>(this))
 
 Client::~Client()
 {
-    std::cout << "Client this:" << this << " Waiting for GUI thread\n";
-    GuiThread.join();
-    std::cout << "Client this:" << this << ", GUI thread stopped, Deleting Client\n";
+    std::cout << "Client this:" << this << " Deleting Client\n";
 }
 
 void Client::showUserMenu()
@@ -19,17 +17,22 @@ void Client::showUserMenu()
     while(!Finalized)
     {
         std::cout << "Enter Input:\n1) Ping\n2) Message All\n";
-        uint8_t result;
+        std::string result;
         std::cin >> result;
-        switch(result)
+        uint8_t res = std::stoi(result);
+        std::cout << "\n Entered: " << result << "\n";
+        switch(res)
         {
             case 1:
+                std::cout << "In function: " << __FUNCTION__ << ", Case Ping\n";
                 Conn->sendMessage(CustomMsgTypes::ServerPing);
                 break;
             case 2:
+                std::cout << "In function: " << __FUNCTION__ << ", Case Message all\n";
                 Conn->sendMessage(CustomMsgTypes::MessageAll);
                 break;
             default:
+                std::cout << "In function: " << __FUNCTION__ << ", Default, exiting\n";
                 Finalized = true;
         }
     }
@@ -49,4 +52,11 @@ void Client::finalize()
     std::cout << "In function: " << __FUNCTION__ << ", Finaze called\n";
     Finalized = true;
     Conn->finalize();
+}
+
+void Client::waiting()
+{
+    std::cout << "In function: " << __FUNCTION__ << ", waiting GUI thread to end\n";
+    GuiThread.join();
+    std::cout << "In function: " << __FUNCTION__ << ", GUI thread ended\n";
 }

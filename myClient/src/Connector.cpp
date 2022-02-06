@@ -29,8 +29,8 @@ void Connector::initializeConnection()
   if(!ec)
   {
     std::cout << "Connected" << std::endl;
-    MyClient->connected();
     readFromSocket();
+    MyClient->connected();
   }
   else
   {
@@ -69,13 +69,24 @@ void Connector::ioRun()
     //std::cout << "In function: " << __FUNCTION__ << ", before delay\n";
     using namespace std::literals::chrono_literals;
     std::this_thread::sleep_for(2s);
+    std::cout << "In function: " << __FUNCTION__ << ", Still reading\n";
   }
   std::cout << "In function: " << __FUNCTION__ << ", Loop exited\n";
 }
 
 void Connector::sendMessage(CustomMsgTypes customMsgType)
 {
-  
+  std::cout << "In function: " << __FUNCTION__ << ", Sending message\n";
+  asio::error_code ec;
+  Message newMessage;
+  std::string data = "Buksi";
+
+  newMessage.Header.id = customMsgType;
+  newMessage.Header.size = data.size()+1;
+  newMessage.addToBody(data);
+
+  Socket->write_some(asio::buffer(&newMessage.Header, HeaderSize), ec);
+  Socket->write_some(asio::buffer(&newMessage.Body, newMessage.Header.size), ec);
 }
 
 void Connector::readFromSocket()
@@ -86,6 +97,7 @@ void Connector::readFromSocket()
 
 void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
 {
+  std::cout << "@@@ In function: " << __FUNCTION__ << "\n";
   if(messagePart == Message::MessageParts::Head)
   {
     Socket->async_read_some(asio::buffer(&tmpMsg.Header, size),
@@ -111,6 +123,7 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
         }
         else
         {
+          std::cout << "ERROR In function: " << __FUNCTION__ << "\n";
           MyClient->finalize();
         }
       });
@@ -132,6 +145,7 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
       }
       else
       {
+        std::cout << "ERROR In function: " << __FUNCTION__ << "\n";
         MyClient->finalize();
       }
     });

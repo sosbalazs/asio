@@ -5,6 +5,7 @@ int main()
 {
   std::cout << "Initialize Client...\n";
   Client myClient;
+  myClient.waiting();
   /*myClient.print();
   using namespace std::chrono_literals;
   std::this_thread::sleep_for(20000ms);*/
