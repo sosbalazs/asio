@@ -11,13 +11,16 @@ std::ostream& operator<<(std::ostream& os, const CustomMsgTypes& type)
     ServerMessage,
     */
     case CustomMsgTypes::ServerPing:
-      os << 2;
+      os << "ServerPing";
       break;
     case CustomMsgTypes::MessageAll:
-      os << 3;
+      os << "MessageAll";
       break;
     case CustomMsgTypes::ServerMessage:
+      break;
     case CustomMsgTypes::ServerAccept:
+      os << "ServerAccept\n";
+      break;
     case CustomMsgTypes::ServerDeny:
       os << 0;
   }
@@ -53,12 +56,16 @@ std::ostream& operator <<(std::ostream& os, Message_header& header)
 
 std::ostream& operator<<(std::ostream& os, Message& msg)
 {
-  os << msg.Header << "\nData: ";
-  for (const auto& character:msg.Body) 
+  os << msg.Header << "\n";
+  if(msg.Header.size != 0)
   {
-    os << character;
+    os << "Data: ";
+    for (int i = 0; i < msg.Header.size; ++i)
+    {
+      os << msg.Body[i];
+    }
+    os << std::endl;
   }
-  os << std::endl;
   return os;
 }
 

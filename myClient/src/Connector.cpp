@@ -17,9 +17,9 @@ void Connector::initializeConnection()
   std::cout << "This: " << this << ", Initialize Connection...\nMyClient is: " << MyClient << "\n";
   asio::error_code ec;
 
-  // asio::io_context::work idleWork(Context);
+  asio::io_context::work idleWork(Context);
 
-  /*ContextThread = std::thread([&]() {*/ Context.run();// });
+  ContextThread = std::thread([&]() { Context.run(); });
 
   asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 60000);
   Socket = std::make_shared<asio::ip::tcp::socket>(Context);
@@ -60,6 +60,7 @@ void Connector::ioRun()
   {
     if(!Queue.empty())
     {
+      std::scoped_lock lock(Locker);
       std::cout << "In function: " << __FUNCTION__ << ", Queue is not empty\n";
       Message msg = Queue.at(0);
       Queue.erase(Queue.begin());
@@ -69,7 +70,6 @@ void Connector::ioRun()
     //std::cout << "In function: " << __FUNCTION__ << ", before delay\n";
     using namespace std::literals::chrono_literals;
     std::this_thread::sleep_for(2s);
-    std::cout << "In function: " << __FUNCTION__ << ", Still reading\n";
   }
   std::cout << "In function: " << __FUNCTION__ << ", Loop exited\n";
 }
@@ -100,7 +100,8 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
   std::cout << "@@@ In function: " << __FUNCTION__ << "\n";
   if(messagePart == Message::MessageParts::Head)
   {
-    Socket->async_read_some(asio::buffer(&tmpMsg.Header, size),
+    std::cout << "@@@ Readsome\n";
+    asio::async_read(*Socket, asio::buffer(&tmpMsg.Header, sizeof(tmpMsg.Header)),
       [&](std::error_code ec, std::size_t length)
       {
         if(!ec)
@@ -130,25 +131,26 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
   }
   else
   {
-    Socket->async_read_some(asio::buffer(tmpMsg.Body, size),
-    [&](std::error_code ec, std::size_t length)
-    {
-      if(!ec)
+    asio::async_read(*Socket, asio::buffer(&tmpMsg.Body, size),
+      [&](std::error_code ec, std::size_t length)
       {
-        std::cout << "\nReading Body " << length << " bytes\n";
+        if(!ec)
+        {
+          std::cout << "\nReading Body " << length << " bytes\n";
 
-        std::cout << "\nMessage arrived: " << tmpMsg << "\n";
-        
-        Queue.push_back(tmpMsg);
-        resetTmpMsg();
-        grabSomeData(Message::MessageParts::Head, HeaderSize);
-      }
-      else
-      {
-        std::cout << "ERROR In function: " << __FUNCTION__ << "\n";
-        MyClient->finalize();
-      }
-    });
+          std::cout << "\nMessage arrived: " << tmpMsg << "\n";
+
+          std::cout << "####### Size of Queue: " << Queue.size() << "\n";
+          Queue.push_back(tmpMsg);
+          resetTmpMsg();
+          grabSomeData(Message::MessageParts::Head, HeaderSize);
+        }
+        else
+        {
+          std::cout << "ERROR In function: " << __FUNCTION__ << "\n";
+          MyClient->finalize();
+        }
+      });
   }
 }
 

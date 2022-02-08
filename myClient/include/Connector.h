@@ -41,6 +41,7 @@ class Connector
         bool IsFinalized = false;
         Message tmpMsg;
         std::vector<Message> Queue;
+        std::mutex Locker;
 };
 
 #endif
