@@ -58,12 +58,10 @@ void Connector::ioRun()
   std::cout << "In function: " << __FUNCTION__ << "\n";
   while(!IsFinalized) 
   {
-    if(!Queue.empty())
+    if(!MyQueue.empty())
     {
-      std::scoped_lock lock(Locker);
       std::cout << "In function: " << __FUNCTION__ << ", Queue is not empty\n";
-      Message msg = Queue.at(0);
-      Queue.erase(Queue.begin());
+      Message msg = MyQueue.pop_front();
       std::cout << msg << std::endl;
     }
     // Waiting for messages
@@ -117,7 +115,7 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
           {
             // There is no body for this message
             std::cout << "\nThere is no body to this message!\n";
-            Queue.push_back(tmpMsg);
+            MyQueue.push_back(tmpMsg);
             resetTmpMsg();
             grabSomeData(Message::MessageParts::Head, HeaderSize);
           }
@@ -140,8 +138,7 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
 
           std::cout << "\nMessage arrived: " << tmpMsg << "\n";
 
-          std::cout << "####### Size of Queue: " << Queue.size() << "\n";
-          Queue.push_back(tmpMsg);
+          MyQueue.push_back(tmpMsg);
           resetTmpMsg();
           grabSomeData(Message::MessageParts::Head, HeaderSize);
         }

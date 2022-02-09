@@ -15,7 +15,12 @@ project(myClient)
 include_directories(include)
 include_directories("c:/asio-1.20.0/include/")
 
-set(SOURCES src/main.cpp src/Message.cpp src/Connector.cpp src/Client.cpp)
+set(SOURCES 
+src/main.cpp 
+src/Message.cpp 
+src/Connector.cpp 
+src/Client.cpp
+src/Queue.cpp)
 
 # add the executable
 add_executable(myClient ${SOURCES})

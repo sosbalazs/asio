@@ -3,6 +3,7 @@
 
 #include "StdCommon.h"
 #include "Message.h"
+#include "Queue.h"
 
 class Client;
 
@@ -40,8 +41,7 @@ class Connector
 
         bool IsFinalized = false;
         Message tmpMsg;
-        std::vector<Message> Queue;
-        std::mutex Locker;
+        Queue MyQueue;
 };
 
 #endif
