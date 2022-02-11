@@ -11,5 +11,5 @@ class Queue
 
     private:
         std::vector<Message> Datas;
-        std::mutex Locker;
+        //std::mutex Locker;
 };

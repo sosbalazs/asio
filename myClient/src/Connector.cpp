@@ -79,12 +79,12 @@ void Connector::sendMessage(CustomMsgTypes customMsgType)
   Message newMessage;
   std::string data = "Buksi";
 
-  newMessage.Header.id = customMsgType;
-  newMessage.Header.size = data.size()+1;
+  newMessage.Header.Id = customMsgType;
+  newMessage.Header.Size = data.size()+1;
   newMessage.addToBody(data);
 
   Socket->write_some(asio::buffer(&newMessage.Header, HeaderSize), ec);
-  Socket->write_some(asio::buffer(&newMessage.Body, newMessage.Header.size), ec);
+  Socket->write_some(asio::buffer(&newMessage.Body, newMessage.Header.Size), ec);
 }
 
 void Connector::readFromSocket()
@@ -106,17 +106,17 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
         {
           std::cout << "\nReading header " << length << " bytes\n";
           std::cout << tmpMsg.Header;
-          if(tmpMsg.Header.size != 0)
+          if(tmpMsg.Header.Size != 0)
           {
+            resetTmpMsg();
             // There is also body, let's grab that
-            grabSomeData(Message::MessageParts::Body, tmpMsg.Header.size);
+            grabSomeData(Message::MessageParts::Body, tmpMsg.Header.Size);
           }
           else
           {
             // There is no body for this message
             std::cout << "\nThere is no body to this message!\n";
             MyQueue.push_back(tmpMsg);
-            resetTmpMsg();
             grabSomeData(Message::MessageParts::Head, HeaderSize);
           }
         }
@@ -134,12 +134,18 @@ void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
       {
         if(!ec)
         {
-          std::cout << "\nReading Body " << length << " bytes\n";
+          std::cout << "\nReading Body Length: " << length << " bytes\n";
+          std::cout << "\nReading Body Size: " << size << " bytes\n";
 
-          std::cout << "\nMessage arrived: " << tmpMsg << "\n";
+          std::cout << "\nMessage arrived: " << tmpMsg << "tmpMsg data size: " << tmpMsg.Body.size() << "\n";
 
-          MyQueue.push_back(tmpMsg);
-          resetTmpMsg();
+          Message tmpMsg2 {{CustomMsgTypes::ServerPing, 6}, {'B', 'u', 'k', 's', 'i'}};
+
+          std::cout << "\nMessage created: " << tmpMsg2 << "tmpMsg2 data size: " << tmpMsg2.Body.size() << "\n";
+          (tmpMsg.Body).resize(length);
+          MyQueue.push_back(tmpMsg2);
+          //MyQueue.push_back(tmpMsg);
+          //resetTmpMsg();
           grabSomeData(Message::MessageParts::Head, HeaderSize);
         }
         else

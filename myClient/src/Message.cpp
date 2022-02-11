@@ -29,10 +29,10 @@ std::ostream& operator<<(std::ostream& os, const CustomMsgTypes& type)
 
 Message::Message()
 {
-  Header.size = 0;
+  Header.Size = 0;
 }
 
-Message::Message(Message_header& header, std::vector<uint8_t> body):Header(header), Body(body)
+Message::Message(Message_header header, std::vector<uint8_t> body):Header(header), Body(body)
 {
   
 }
@@ -43,24 +43,24 @@ Message& Message::addToBody(std::string newData)
   {
     Body.push_back(character);
   }
-  Header.size=Body.size()+1;
+  Header.Size=Body.size()+1;
 
   return *this;
 }
 
 std::ostream& operator <<(std::ostream& os, Message_header& header)
 {
-  os << "Msg id: " << header.id << ", data size: " << header.size;
+  os << "Msg id: " << header.Id << ", data size: " << header.Size;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, Message& msg)
 {
   os << msg.Header << "\n";
-  if(msg.Header.size != 0)
+  if(msg.Header.Size != 0)
   {
     os << "Data: ";
-    for (int i = 0; i < msg.Header.size; ++i)
+    for (int i = 0; i < msg.Header.Size; ++i)
     {
       os << msg.Body[i];
     }
