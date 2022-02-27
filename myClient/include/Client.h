@@ -8,18 +8,18 @@ class Client
 {
     public:
         Client();
+        Client(const Client& ) = delete;
+        Client(const Client&& ) = delete;
+        Client& operator=(const Client& ) = delete;
 
         ~Client();
 
-        void showUserMenu();
-
-        void connected();        
-
+        void connected();
         void finalize();
-
         void waiting();
 
     private:
+        void showUserMenu();
 
         std::unique_ptr<Connector> Conn;
         bool Finalized = false;

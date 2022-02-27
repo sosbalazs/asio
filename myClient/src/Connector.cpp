@@ -61,8 +61,10 @@ void Connector::ioRun()
     if(!MyQueue.empty())
     {
       std::cout << "In function: " << __FUNCTION__ << ", Queue is not empty\n";
-      Message msg = MyQueue.pop_front();
+      //Message msg = MyQueue.pop_front();
+      Message msg = MyQueue.at(0);
       std::cout << msg << std::endl;
+      MyQueue.erase(MyQueue.begin());
     }
     // Waiting for messages
     //std::cout << "In function: " << __FUNCTION__ << ", before delay\n";
@@ -90,78 +92,63 @@ void Connector::sendMessage(CustomMsgTypes customMsgType)
 void Connector::readFromSocket()
 {
     std::cout << "In function: " << __FUNCTION__ << "\n";
-    grabSomeData(Message::MessageParts::Head, HeaderSize);
+    grabHeader();
 }
 
-void Connector::grabSomeData(Message::MessageParts messagePart, uint32_t size)
+void Connector::grabHeader()
 {
   std::cout << "@@@ In function: " << __FUNCTION__ << "\n";
-  if(messagePart == Message::MessageParts::Head)
+  asio::async_read(*Socket, asio::buffer(&tmpMsg.Header, sizeof(tmpMsg.Header)),
+  [&](std::error_code ec, std::size_t length)
   {
-    std::cout << "@@@ Readsome\n";
-    asio::async_read(*Socket, asio::buffer(&tmpMsg.Header, sizeof(tmpMsg.Header)),
-      [&](std::error_code ec, std::size_t length)
+    if(!ec)
+    {
+      std::cout << "\nReading header " << length << " bytes\n";
+      std::cout << tmpMsg.Header;
+      if(tmpMsg.Header.Size != 0)
       {
-        if(!ec)
-        {
-          std::cout << "\nReading header " << length << " bytes\n";
-          std::cout << tmpMsg.Header;
-          if(tmpMsg.Header.Size != 0)
-          {
-            resetTmpMsg();
-            // There is also body, let's grab that
-            grabSomeData(Message::MessageParts::Body, tmpMsg.Header.Size);
-          }
-          else
-          {
-            // There is no body for this message
-            std::cout << "\nThere is no body to this message!\n";
-            MyQueue.push_back(tmpMsg);
-            grabSomeData(Message::MessageParts::Head, HeaderSize);
-          }
-        }
-        else
-        {
-          std::cout << "ERROR In function: " << __FUNCTION__ << "\n";
-          MyClient->finalize();
-        }
-      });
-  }
-  else
-  {
-    asio::async_read(*Socket, asio::buffer(&tmpMsg.Body, size),
-      [&](std::error_code ec, std::size_t length)
+        grabBody();
+      }
+      else
       {
-        if(!ec)
-        {
-          std::cout << "\nReading Body Length: " << length << " bytes\n";
-          std::cout << "\nReading Body Size: " << size << " bytes\n";
-
-          std::cout << "\nMessage arrived: " << tmpMsg << "tmpMsg data size: " << tmpMsg.Body.size() << "\n";
-
-          Message tmpMsg2 {{CustomMsgTypes::ServerPing, 6}, {'B', 'u', 'k', 's', 'i'}};
-
-          std::cout << "\nMessage created: " << tmpMsg2 << "tmpMsg2 data size: " << tmpMsg2.Body.size() << "\n";
-          (tmpMsg.Body).resize(length);
-          MyQueue.push_back(tmpMsg2);
-          //MyQueue.push_back(tmpMsg);
-          //resetTmpMsg();
-          grabSomeData(Message::MessageParts::Head, HeaderSize);
-        }
-        else
-        {
-          std::cout << "ERROR In function: " << __FUNCTION__ << "\n";
-          MyClient->finalize();
-        }
-      });
-  }
+        addToQueue();
+      }
+    }
+    else
+    {
+      std::cout << "ERROR in read header \n";
+      MyClient->finalize();
+    }
+  });
 }
 
-void Connector::resetTmpMsg()
+void Connector::grabBody()
 {
-    //tmpMsg.Header.id = CustomMsgTypes::ServerAccept;
-    //tmpMsg.Header.size = 0;
-    tmpMsg.Body.clear();
+  std::cout << "@@@ In function: " << __FUNCTION__ << "\n";
+  asio::async_read(*Socket, asio::buffer(tmpMsg.Body.data(), tmpMsg.Header.Size),
+    [&](std::error_code ec, std::size_t length)
+    {
+      if(!ec)
+      {
+        std::cout << "\nReading Body Length: " << length << " bytes\n";
+        std::cout << "\nReading Body Size: " << tmpMsg.Header.Size << " bytes\n";
+
+        addToQueue();
+      }
+      else
+      {
+        std::cout << "ERROR in read body\n";
+        MyClient->finalize();
+      }
+    });
+}
+
+void Connector::addToQueue()
+{
+  std::cout << "@@@ SOS before bush back, Msg: " << tmpMsg << std::endl;
+  MyQueue.push_back(tmpMsg);
+  std::cout << "@@@ SOS after bush back, Msg: " << MyQueue.at(MyQueue.size()-1);
+  grabHeader();
 }
 
 

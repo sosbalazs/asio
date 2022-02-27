@@ -27,10 +27,15 @@ class Connector
 
         void finalize();
 
+        Message tmpMsg;
+        std::vector<Message> MyQueue;
+
     private:
-        void grabSomeData(Message::MessageParts messagePart, uint32_t size);
+        void grabHeader();
+        void grabBody();
+        void addToQueue();
+
         void resetTmpMsg();
-        void errorOnRead(Message::MessageParts messagePart, std::error_code ec);
 
         Client* MyClient;
 
@@ -40,8 +45,7 @@ class Connector
         std::thread ContextThread;
 
         bool IsFinalized = false;
-        Message tmpMsg;
-        Queue MyQueue;
+
 };
 
 #endif
