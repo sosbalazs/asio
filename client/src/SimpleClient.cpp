@@ -98,7 +98,6 @@ int main()
 	bool bQuit = false;
 	while (!bQuit)
 	{
-		std::cout << "Unlimited....\n";
 		if (GetForegroundWindow() == GetConsoleWindow())
 		{
 			key[0] = GetAsyncKeyState('1') & 0x8000;
